@@ -1,0 +1,14 @@
+.fileGrid {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fileGrid .foodImage {
+  width: 5rem;
+  height: 5rem;
+}
+
+.fileGrid .foodFilePicker {
+  padding-left: 2rem;
+}
