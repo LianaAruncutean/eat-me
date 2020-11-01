@@ -8,7 +8,7 @@ import Typography from "@material-ui/core/Typography";
 import FastfoodIcon from '@material-ui/icons/Fastfood';
 import { makeStyles } from "@material-ui/core/styles";
 import Container from "@material-ui/core/Container";
-import MultipleSelect from "./MultipleSelect";
+import MultipleSelect from "../../components/AllFoods/MultipleSelect";
 import { ImagePicker } from "react-file-picker";
 import "./FoodForm.css";
 

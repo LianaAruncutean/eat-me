@@ -1,0 +1,9 @@
+.addFoodButton {
+  position: absolute !important;
+  right: 2rem;
+}
+
+.densePaddingButton {
+  position: absolute;
+  left: 2rem;
+}
