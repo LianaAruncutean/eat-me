@@ -1,0 +1,17 @@
+CREATE TABLE [UserBlog](
+	UserId int NOT NULL
+	,BlogId int NOT NULL
+) ON [PRIMARY]
+GO
+
+CREATE NONCLUSTERED INDEX [FK_UserBlog_Blog] ON [UserBlog] ([BlogId]) ON [PRIMARY]
+GO
+
+CREATE NONCLUSTERED INDEX [FK_UserBlog_User] ON [UserBlog] ([UserId]) ON [PRIMARY]
+GO
+
+ALTER TABLE [UserBlog] ADD CONSTRAINT [FK_UserBlog_Blog] FOREIGN KEY ([BlogId]) REFERENCES [Blog] ([BlogId])
+GO
+
+ALTER TABLE [UserBlog] ADD CONSTRAINT [FK_UserBlog_User] FOREIGN KEY ([UserId]) REFERENCES [User] ([Id])
+GO

@@ -7,3 +7,34 @@
   position: absolute;
   left: 2rem;
 }
+
+.allFoodsButtons {
+  position: absolute;
+  top: 1rem;
+  left: 3rem;
+}
+
+.allFoodsButtons .dashboardButton {
+  font-weight: 500;
+  margin-right: 1rem;
+  display: inline;
+}
+
+.allFoodsButtons .blogsButton {
+  font-weight: 500;
+  margin-right: 1rem;
+  display: inline;
+}
+
+.allFoodsButtons .menusButton {
+  font-weight: 500;
+  display: inline;
+}
+
+.logoutButton {
+  font-weight: 500;
+  font-size: 13px;
+  position: absolute;
+  top: 1rem;
+  right: 2rem;
+}

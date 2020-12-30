@@ -13,6 +13,9 @@ import { Link } from "react-router-dom";
 import Fab from "@material-ui/core/Fab";
 import AddIcon from "@material-ui/icons/Add";
 import "./Dashboard.css";
+import { getUserFoods } from "../../api/userFoodAPI";
+import { isNullOrUndefined } from "../../utils/utils";
+import { useHistory } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
   table: {
@@ -20,6 +23,7 @@ const useStyles = makeStyles((theme) => ({
   },
   root: {
     flexGrow: 1,
+    overflow: "hidden"
   },
   paper: {
     padding: theme.spacing(2),
@@ -28,54 +32,77 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function createData(name, calories, fat, carbs, protein) {
-  return { name, calories, fat, carbs, protein };
-}
-
-const rows = [
-  createData("Frozen yoghurt", 159, 6.0, 24, 4.0),
-  createData("Ice cream sandwich", 237, 9.0, 37, 4.3),
-  createData("Eclair", 262, 16.0, 24, 6.0),
-  createData("Cupcake", 305, 3.7, 67, 4.3),
-  createData("Gingerbread", 356, 16.0, 49, 3.9),
-  createData("Frozen yoghurt", 159, 6.0, 24, 4.0),
-  createData("Ice cream sandwich", 237, 9.0, 37, 4.3),
-  createData("Eclair", 262, 16.0, 24, 6.0),
-  createData("Cupcake", 305, 3.7, 67, 4.3),
-  createData("Gingerbread", 356, 16.0, 49, 3.9),
-  createData("Frozen yoghurt", 159, 6.0, 24, 4.0),
-  createData("Ice cream sandwich", 237, 9.0, 37, 4.3),
-  createData("Eclair", 262, 16.0, 24, 6.0),
-  createData("Cupcake", 305, 3.7, 67, 4.3),
-  createData("Gingerbread", 356, 16.0, 49, 3.9),
-];
-
 function Dashboard() {
   const classes = useStyles();
+  const [userFoods, setUserFoods] = React.useState([]);
+  const userId = localStorage.getItem("userId");
+  const calories = localStorage.getItem("calories");
+  const history = useHistory();
+  const caloriesConsumed = userFoods.reduce((a, b) => a + b["calories"], 0);
 
+  React.useEffect(() => {
+    const getMyFoods = async () => {
+      const myFoods = await getUserFoods(userId);
+      if (!isNullOrUndefined(myFoods)) setUserFoods(myFoods);
+    };
+
+    getMyFoods();
+  }, []);
+
+  if (isNullOrUndefined(userId)) {
+    history.push("/login");
+    return null;
+  }
   return (
     <div className={classes.root}>
       <Grid className="dashboard" container spacing={3}>
         <Grid item xs={12}>
-          <Typography component="h1" variant="h5">
-            avut - mancat = ramas
+          <Typography component="h1" variant="h5" className="dashboardHeader">
+            Calories Remaining
           </Typography>
+          <Typography component="h1" variant="h5" className="dashboardHeader">
+            {calories} - {caloriesConsumed.toFixed(2)} = {(calories - caloriesConsumed).toFixed(2)}
+          </Typography>
+          <div className="dashboardButtons">
+            <Link
+              to="/blogs"
+              style={{ textDecoration: "none", color: "black" }}
+            >
+              <div className="blogsButton">Advice</div>
+            </Link>
+            <Link
+              to="/retrospective"
+              style={{ textDecoration: "none", color: "black" }}
+            >
+              <div className="menusButton">Retrospective</div>
+            </Link>
+          </div>
+          <Link to="/login" style={{ textDecoration: "none", color: "black" }}>
+            <div
+              className="logoutButton"
+              onClick={() => {
+                localStorage.clear();
+              }}
+            >
+              Logout
+            </div>
+          </Link>
         </Grid>
         <TableContainer className="myList" component={Paper}>
           <Table className={classes.table} aria-label="simple table">
             <TableHead>
               <TableRow>
-                <TableCell>Your Food</TableCell>
-                <TableCell align="right">Calories</TableCell>
+                <TableCell className="tableHeadersStyle">Your Food</TableCell>
+                <TableCell className="tableHeadersStyle" align="right">Calories</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {rows.map((row) => (
-                <TableRow key={row.name}>
+              {userFoods.map((userFood, index) => (
+                <TableRow key={index}>
                   <TableCell component="th" scope="row">
-                    {row.name}
+                    {userFood.name}
                   </TableCell>
-                  <TableCell align="right">{row.calories}</TableCell>
+                  <TableCell align="right">{userFood.calories}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

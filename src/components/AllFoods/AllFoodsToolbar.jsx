@@ -6,12 +6,8 @@ import Typography from "@material-ui/core/Typography";
 import IconButton from "@material-ui/core/IconButton";
 import Tooltip from "@material-ui/core/Tooltip";
 import DeleteIcon from "@material-ui/icons/Delete";
-import FilterListIcon from "@material-ui/icons/FilterList";
 import { lighten, makeStyles } from "@material-ui/core/styles";
-
-AllFoodsToolbar.propTypes = {
-  numSelected: PropTypes.number.isRequired,
-};
+import { deleteFood } from "../../api/allFoodsAPI";
 
 const useToolbarStyles = makeStyles((theme) => ({
   root: {
@@ -30,27 +26,29 @@ const useToolbarStyles = makeStyles((theme) => ({
         },
   title: {
     flex: "1 1 100%",
+    fontWeight: 700,
+    fontSize: "24px",
   },
 }));
 
 function AllFoodsToolbar(props) {
   const classes = useToolbarStyles();
-  const { numSelected } = props;
+  const { selectedFoods } = props;
 
   return (
     <Toolbar
       className={clsx(classes.root, {
-        [classes.highlight]: numSelected > 0,
+        [classes.highlight]: selectedFoods.length > 0,
       })}
     >
-      {numSelected > 0 ? (
+      {selectedFoods.lenth > 0 ? (
         <Typography
           className={classes.title}
           color="inherit"
           variant="subtitle1"
           component="div"
         >
-          {numSelected} selected
+          {selectedFoods.length} selected
         </Typography>
       ) : (
         <Typography
@@ -63,19 +61,19 @@ function AllFoodsToolbar(props) {
         </Typography>
       )}
 
-      {numSelected > 0 ? (
+      {selectedFoods.length > 0 ? (
         <Tooltip title="Delete">
-          <IconButton aria-label="delete">
+          <IconButton
+            aria-label="delete"
+            onClick={(e) => {
+              e.preventDefault();
+              deleteFood(selectedFoods);
+            }}
+          >
             <DeleteIcon />
           </IconButton>
         </Tooltip>
-      ) : (
-        <Tooltip title="Filter list">
-          <IconButton aria-label="filter list">
-            <FilterListIcon />
-          </IconButton>
-        </Tooltip>
-      )}
+      ) : null}
     </Toolbar>
   );
 }

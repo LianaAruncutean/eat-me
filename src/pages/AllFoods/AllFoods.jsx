@@ -16,26 +16,12 @@ import Fab from "@material-ui/core/Fab";
 import AddIcon from "@material-ui/icons/Add";
 import "./AllFoods.css";
 import { Link } from "react-router-dom";
-
-function createData(name, calories, fat, carbs, protein) {
-  return { name, calories, fat, carbs, protein };
-}
-
-const rows = [
-  createData("Cupcake", 305, 3.7, 67, 4.3),
-  createData("Donut", 452, 25.0, 51, 4.9),
-  createData("Eclair", 262, 16.0, 24, 6.0),
-  createData("Frozen yoghurt", 159, 6.0, 24, 4.0),
-  createData("Gingerbread", 356, 16.0, 49, 3.9),
-  createData("Honeycomb", 408, 3.2, 87, 6.5),
-  createData("Ice cream sandwich", 237, 9.0, 37, 4.3),
-  createData("Jelly Bean", 375, 0.0, 94, 0.0),
-  createData("KitKat", 518, 26.0, 65, 7.0),
-  createData("Lollipop", 392, 0.2, 98, 0.0),
-  createData("Marshmallow", 318, 0, 81, 2.0),
-  createData("Nougat", 360, 19.0, 9, 37.0),
-  createData("Oreo", 437, 18.0, 63, 4.0),
-];
+import Modal from "@material-ui/core/Modal";
+import FoodDetails from "./FoodDetails";
+import { getAllFoods } from "../../api/allFoodsAPI";
+import { isNullOrUndefined } from "../../utils/utils";
+import Button from "@material-ui/core/Button";
+import { useHistory } from "react-router-dom";
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -65,7 +51,9 @@ function stableSort(array, comparator) {
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    width: "100%",
+    width: "85%",
+    paddingTop: "4rem",
+    marginLeft: "7rem",
   },
   paper: {
     width: "100%",
@@ -95,6 +83,25 @@ export default function EnhancedTable() {
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [openedFood, setOpenedFood] = React.useState(null);
+  const [foods, setFoods] = React.useState([]);
+  const userId = localStorage.getItem("userId");
+  const isAdmin = localStorage.getItem("isAdmin") === "true";
+  const history = useHistory();
+
+  React.useEffect(() => {
+    const getFoods = async () => {
+      const foods = await getAllFoods();
+      if (!isNullOrUndefined(foods)) setFoods(foods);
+    };
+
+    getFoods();
+  }, []);
+
+  if (isNullOrUndefined(userId)) {
+    history.push("/login");
+    return null;
+  }
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === "asc";
@@ -104,7 +111,7 @@ export default function EnhancedTable() {
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelecteds = rows.map((n) => n.name);
+      const newSelecteds = foods.map((n) => n.name);
       setSelected(newSelecteds);
       return;
     }
@@ -147,12 +154,39 @@ export default function EnhancedTable() {
   const isSelected = (name) => selected.indexOf(name) !== -1;
 
   const emptyRows =
-    rowsPerPage - Math.min(rowsPerPage, rows.length - page * rowsPerPage);
+    rowsPerPage - Math.min(rowsPerPage, foods.length - page * rowsPerPage);
 
   return (
     <div className={classes.root}>
+      <div
+        className="allFoodsButtons"
+        style={{ display: isAdmin ? "none" : "block" }}
+      >
+        <Link to="/" style={{ textDecoration: "none", color: "black" }}>
+          <div className="dashboardButton">Dashboard</div>
+        </Link>
+        <Link to="/blogs" style={{ textDecoration: "none", color: "black" }}>
+          <div className="blogsButton">Advice</div>
+        </Link>
+        <Link
+          to="/retrospective"
+          style={{ textDecoration: "none", color: "black" }}
+        >
+          <div className="menusButton">Retrospective</div>
+        </Link>
+      </div>
+      <Link to="/login" style={{ textDecoration: "none", color: "black" }}>
+        <div
+          className="logoutButton"
+          onClick={() => {
+            localStorage.clear();
+          }}
+        >
+          Logout
+        </div>
+      </Link>
       <Paper className={classes.paper}>
-        <AllFoodsToolbar numSelected={selected.length} />
+        <AllFoodsToolbar selectedFoods={selected} />
         <TableContainer>
           <Table
             className={classes.table}
@@ -167,10 +201,10 @@ export default function EnhancedTable() {
               orderBy={orderBy}
               onSelectAllClick={handleSelectAllClick}
               onRequestSort={handleRequestSort}
-              rowCount={rows.length}
+              rowCount={foods.length}
             />
             <TableBody>
-              {stableSort(rows, getComparator(order, orderBy))
+              {stableSort(foods, getComparator(order, orderBy))
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row, index) => {
                   const isItemSelected = isSelected(row.name);
@@ -190,6 +224,9 @@ export default function EnhancedTable() {
                         <Checkbox
                           checked={isItemSelected}
                           inputProps={{ "aria-labelledby": labelId }}
+                          style={{
+                            display: isAdmin ? "block" : "none",
+                          }}
                         />
                       </TableCell>
                       <TableCell
@@ -197,10 +234,32 @@ export default function EnhancedTable() {
                         id={labelId}
                         scope="row"
                         padding="none"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (!isAdmin) setOpenedFood(row);
+                        }}
+                        style={{ cursor: isAdmin ? "default" : "pointer" }}
                       >
                         {row.name}
                       </TableCell>
-                      <TableCell align="right">{row.calories}</TableCell>
+                      <TableCell
+                        align="right"
+                        onClick={(e) => {
+                           e.stopPropagation();
+                        }}
+                      >
+                        {row.calories}
+                      </TableCell>
+                      <TableCell
+                        padding="none"
+                        style={{ display: isAdmin ? "block" : "none" }}
+                      >
+                        <Link to="/addfood">
+                          <Button variant="contained" color="secondary">
+                            EDIT
+                          </Button>
+                        </Link>
+                      </TableCell>
                     </TableRow>
                   );
                 })}
@@ -215,7 +274,7 @@ export default function EnhancedTable() {
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"
-          count={rows.length}
+          count={foods.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onChangePage={handleChangePage}
@@ -227,7 +286,12 @@ export default function EnhancedTable() {
         label="Dense padding"
         className="densePaddingButton"
       />
-      <Link to="/addfood">
+      <Link
+        to="/addfood"
+        style={{
+          display: isAdmin ? "block" : "none",
+        }}
+      >
         <Fab
           color="secondary"
           variant="extended"
@@ -238,6 +302,17 @@ export default function EnhancedTable() {
           Add Food
         </Fab>
       </Link>
+      <Modal
+        open={openedFood !== null}
+        onClose={() => setOpenedFood(null)}
+        aria-labelledby="simple-modal-title"
+        aria-describedby="simple-modal-description"
+      >
+        <FoodDetails
+          foodDetails={openedFood}
+          closeModal={() => setOpenedFood(null)}
+        />
+      </Modal>
     </div>
   );
 }

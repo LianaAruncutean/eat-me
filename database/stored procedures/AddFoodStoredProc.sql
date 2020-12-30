@@ -1,0 +1,24 @@
+IF OBJECT_ID('[AddFoodStoredProc]') IS NOT NULL
+  DROP PROCEDURE [AddFoodStoredProc]
+GO
+
+
+CREATE PROCEDURE [AddFoodStoredProc] @FOOD_NAME AS NVARCHAR(50)
+  , @CALORIES AS INT
+  , @IMAGE_URL AS NVARCHAR(255)
+AS
+BEGIN
+  
+  INSERT INTO Food (
+	 Name
+	, Calories
+	, ImageURL
+  )
+  VALUES (
+	@FOOD_NAME
+	, @CALORIES
+	, @IMAGE_URL
+  )
+
+END
+GO

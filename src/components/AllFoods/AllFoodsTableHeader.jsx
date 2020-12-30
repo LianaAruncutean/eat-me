@@ -39,6 +39,7 @@ function AllFoodsTableHeader(props) {
   const createSortHandler = (property) => (event) => {
     onRequestSort(event, property);
   };
+  const isAdmin = localStorage.getItem("isAdmin") === "true";
 
   return (
     <TableHead>
@@ -49,6 +50,9 @@ function AllFoodsTableHeader(props) {
             checked={rowCount > 0 && numSelected === rowCount}
             onChange={onSelectAllClick}
             inputProps={{ "aria-label": "select all desserts" }}
+            style={{
+              display: isAdmin ? "block" : "none",
+            }}
           />
         </TableCell>
         {headCells.map((headCell) => (

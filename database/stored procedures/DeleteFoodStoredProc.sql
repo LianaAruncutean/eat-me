@@ -1,0 +1,18 @@
+IF OBJECT_ID('[DeleteFoodStoredProc]') IS NOT NULL
+  DROP PROCEDURE [DeleteFoodStoredProc]
+GO
+
+
+CREATE PROCEDURE [DeleteFoodStoredProc] @FOOD_NAME AS NVARCHAR(50)
+AS
+BEGIN
+  
+  DELETE FROM UserFood
+  WHERE FoodId = (SELECT FoodId FROM Food WHERE Name = @FOOD_NAME)
+
+  DELETE FROM Food 
+  WHERE Name = @FOOD_NAME
+
+  SELECT @FOOD_NAME AS FoodName
+END
+GO

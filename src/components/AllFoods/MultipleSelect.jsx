@@ -36,10 +36,15 @@ const MenuProps = {
   },
 };
 
-const names = [
-  "Fruit",
-  "Vegetable",
-  "Dessert",
+const categories = [
+  {
+    categoryId: 1,
+    name: "Fruit",
+  },
+  {
+    categoryId: 2,
+    name: "Vegetable",
+  },
 ];
 
 function getStyles(name, personName, theme) {
@@ -51,14 +56,9 @@ function getStyles(name, personName, theme) {
   };
 }
 
-export default function MultipleSelect() {
+export default function MultipleSelect(props) {
   const classes = useStyles();
   const theme = useTheme();
-  const [personName, setPersonName] = React.useState([]);
-
-  const handleChange = (event) => {
-    setPersonName(event.target.value);
-  };
 
   return (
     <FormControl className={classes.formControl}>
@@ -67,8 +67,11 @@ export default function MultipleSelect() {
         labelId="demo-mutiple-chip-label"
         id="demo-mutiple-chip"
         multiple
-        value={personName}
-        onChange={handleChange}
+        value={props.value}
+        onChange={(e) => {
+          const category = e.target.value;
+          props.handleChange(category);
+        }}
         input={<Input id="select-multiple-chip" />}
         renderValue={(selected) => (
           <div className={classes.chips}>
@@ -79,13 +82,13 @@ export default function MultipleSelect() {
         )}
         MenuProps={MenuProps}
       >
-        {names.map((name) => (
+        {categories.map((category) => (
           <MenuItem
-            key={name}
-            value={name}
-            style={getStyles(name, personName, theme)}
+            key={category.categoryId}
+            value={category.name}
+            style={getStyles(category.name, props.value, theme)}
           >
-            {name}
+            {category.name}
           </MenuItem>
         ))}
       </Select>

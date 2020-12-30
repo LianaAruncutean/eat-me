@@ -5,12 +5,15 @@ import CssBaseline from "@material-ui/core/CssBaseline";
 import TextField from "@material-ui/core/TextField";
 import Grid from "@material-ui/core/Grid";
 import Typography from "@material-ui/core/Typography";
-import FastfoodIcon from '@material-ui/icons/Fastfood';
+import FastfoodIcon from "@material-ui/icons/Fastfood";
 import { makeStyles } from "@material-ui/core/styles";
 import Container from "@material-ui/core/Container";
 import MultipleSelect from "../../components/AllFoods/MultipleSelect";
 import { ImagePicker } from "react-file-picker";
 import "./FoodForm.css";
+import { addFood } from "../../api/allFoodsAPI";
+import { isNullOrUndefined } from "../../utils/utils";
+import { useHistory } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -33,10 +36,23 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function FoodForm() {
-  const [image, setImage] = React.useState(null);
   const classes = useStyles();
+  const defaultFood = {
+    Id: null,
+    Name: null,
+    Calories: null,
+    Category: [],
+    ImageUrl: null,
+  };
+  const [food, setFood] = React.useState(defaultFood);
+  const userId = localStorage.getItem("userId");
+  const history = useHistory();
 
-  console.log(image);
+  if (isNullOrUndefined(userId)) {
+    history.push("/login");
+    return null;
+  }
+
   return (
     <Container component="main" maxWidth="xs">
       <CssBaseline />
@@ -47,7 +63,13 @@ function FoodForm() {
         <Typography component="h1" variant="h5">
           Add Food
         </Typography>
-        <form className={classes.form}>
+        <form
+          className={classes.form}
+          onSubmit={async (e) => {
+            e.preventDefault();
+            await addFood(food);
+          }}
+        >
           <Grid container spacing={2}>
             <Grid item xs={12}>
               <TextField
@@ -59,10 +81,25 @@ function FoodForm() {
                 id="foodName"
                 label="Food Name"
                 autoFocus
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setFood({
+                    ...food,
+                    Name: value,
+                  });
+                }}
               />
             </Grid>
             <Grid item xs={12}>
-              <MultipleSelect />
+              <MultipleSelect
+                value={food.Category}
+                handleChange={(newCategory) =>
+                  setFood({
+                    ...food,
+                    Category: newCategory,
+                  })
+                }
+              />
             </Grid>
             <Grid item xs={12}>
               <TextField
@@ -73,10 +110,17 @@ function FoodForm() {
                 label="Food Calories per 100g"
                 name="foodCalories"
                 autoComplete="fcalories"
+                onChange={(e) => {
+                  const caloriesAsNumber = Number(e.target.value);
+                  setFood({
+                    ...food,
+                    Calories: caloriesAsNumber,
+                  });
+                }}
               />
             </Grid>
             <Grid item xs={12} className="fileGrid">
-              <img className="foodImage" src={image} alt="" />
+              <img className="foodImage" src={food.ImageUrl} alt="" />
               <div className="foodFilePicker">
                 <ImagePicker
                   extensions={["jpg", "jpeg", "png"]}
@@ -86,7 +130,12 @@ function FoodForm() {
                     minHeight: 0,
                     maxHeight: 500000,
                   }}
-                  onChange={(base64Image) => setImage(base64Image)}
+                  onChange={(base64Image) => {
+                    setFood({
+                      ...food,
+                      ImageUrl: base64Image,
+                    });
+                  }}
                   onError={(errMsg) => console.log(errMsg)}
                 >
                   <button>Click to upload image</button>
